@@ -1,0 +1,84 @@
+﻿@model ControlStock.Models.PedidoViewModel
+
+<h2>Crear Pedido</h2>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label>Cliente:</label>
+        <input asp-for="Pedido.Cliente" />
+    </div>
+
+    <h3>Seleccionar Productos</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Cantidad</th>
+                <th>Agregar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in Model.Producto)
+            {
+                <tr>
+                    <td>@producto.Nombre</td>
+                    <td>@producto.Precio</td>
+                    <td>@producto.Stock</td>
+                    <td>
+                        <input type="number" id="cantidad_@producto.Id" min="1" max="@producto.Stock" value="1" />
+                    </td>
+                    <td>
+                        <button type="button" onclick="agregarProducto(@producto.Id)">Agregar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Detalle del Pedido</h3>
+    <table id="detallePedido">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se añadirán los productos seleccionados con JavaScript -->
+        </tbody>
+    </table>
+
+    <h3>Total: <span id="totalPedido">0</span></h3>
+
+    <button type="submit">Crear Pedido</button>
+</form>
+
+@section Scripts {
+    <script>
+        let total = 0;
+
+        function agregarProducto(productoId) {
+            const cantidad = document.getElementById("cantidad_" + productoId).value;
+            $.post("/Pedido/AgregarProducto", { productoId, cantidad }, function (response) {
+                if (response.success) {
+                    const detalle = response.detalle;
+                    total += response.total;
+                    $("#detallePedido tbody").append(`
+                            <tr>
+                                <td>${detalle.Producto.Nombre}</td>
+                                <td>${detalle.Precio}</td>
+                                <td>${detalle.Cantidad}</td>
+                                <td>${detalle.Precio * detalle.Cantidad}</td>
+                            </tr>`);
+                    $("#totalPedido").text(total);
+                } else {
+                    alert(response.message);
+                }
+            });
+        }
+    </script>
+}

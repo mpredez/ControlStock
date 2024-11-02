@@ -1,0 +1,114 @@
+﻿@model ControlStock.Models.Pedido
+
+<h2>Crear Pedido</h2>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label>Cliente:</label>
+        <input asp-for="Cliente" />
+    </div>
+    <input type="hidden" asp-for="Fecha" value="@DateTime.Now" />
+    <input type="hidden" id="totalPedidoInput" name="DetallePedidoJson" />
+    <input type="hidden" asp-for="Total" id="total" />
+    <h3>Seleccionar Productos</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Talle</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Cantidad</th>
+                <th>Agregar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in ViewBag.Productos)
+            {
+                <tr>
+                    <td>@producto.Nombre</td>
+                 
+                    <td>@producto.Precio</td>
+                    <td>@producto.Stock</td>
+                    <td>
+                        <input type="hidden" min="1" max="@producto.Stock" value="1" />
+                        <input type="hidden" value="@producto.Id" /> <!-- Aquí debes asegurar que tienes un campo para el ID del producto -->
+                        <input type="hidden" value="@producto.Precio" /> <!-- Y el precio del producto -->
+                        <input type="number" id="cantidad_@producto.Id" min="1" max="@producto.Stock" value="1" />
+
+                    </td>
+                   
+                    <td>
+                        <button type="button" onclick="agregarProducto(@producto.Id, '@producto.Precio')">Agregar</button>
+
+                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Detalle del Pedido</h3>
+    <table id="detallePedido">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se añadirán los productos seleccionados con JavaScript -->
+        </tbody>
+    </table>
+
+    <h3>Total: <span id="Total">0</span></h3>
+
+    <button type="submit">Crear Pedido</button>
+</form>
+
+
+
+    <script>
+    let total = 0;
+
+    function agregarProducto(productoId, precioRaw) {
+        // Convertir el precio a formato decimal estándar
+        const precio = parseFloat(precioRaw.toString().replace(",", "."));
+        const cantidad = document.getElementById("cantidad_" + productoId).value;
+
+        if (cantidad > 0) {
+            const detallePedidoTable = document.getElementById("detallePedido").getElementsByTagName("tbody")[0];
+            const totalProducto = precio * cantidad;
+
+            // Crear una nueva fila en la tabla de detalle
+            const newRow = detallePedidoTable.insertRow();
+            newRow.innerHTML = `
+                <td>${productoId}</td>
+                <td>${precio.toFixed(2)}</td>
+                <td>${cantidad}</td>
+                <td>${totalProducto.toFixed(2)}</td>
+            `;
+
+            // Actualizar el total general
+            let totalPedido = parseFloat(document.getElementById("Total").textContent);
+            totalPedido += totalProducto;
+            document.getElementById("Total").textContent = totalPedido.toFixed(2);
+            $("#total").val(totalPedido); // Actualiza el valor del campo oculto total
+            // Agregar el producto al campo oculto para enviar los detalles del pedido
+            let detallesJson = JSON.parse(document.getElementById("totalPedidoInput").value || "[]");
+            detallesJson.push({
+                ProductoId: productoId,
+                Precio: precio,
+                Cantidad: cantidad,
+                Total: totalProducto
+            });
+            document.getElementById("totalPedidoInput").value = JSON.stringify(detallesJson);
+        }
+    }
+
+
+    </script>
+
+
