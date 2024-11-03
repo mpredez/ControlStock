@@ -8,7 +8,7 @@ namespace ControlStock
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            Console.WriteLine("hola");
             builder.Services.AddDbContext<ControlStockContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("ControlDeStockConnection")));
 
