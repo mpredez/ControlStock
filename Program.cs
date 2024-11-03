@@ -32,7 +32,7 @@ namespace ControlStock
             app.UseRouting();
 
             app.UseAuthorization();
-
+            Console.WriteLine("hola Alejandra");
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
